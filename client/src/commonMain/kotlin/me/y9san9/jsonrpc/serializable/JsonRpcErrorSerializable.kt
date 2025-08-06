@@ -4,10 +4,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 import me.y9san9.jsonrpc.JsonRpcError
 
-/**
- * Serializable variant of [JsonRpcError].
- * Read the documentation there.
- */
+/** Serializable variant of [JsonRpcError]. Read the documentation there. */
 @Serializable
 public data class JsonRpcErrorSerializable(
     val code: JsonRpcErrorCodeSerializable,
@@ -15,9 +12,7 @@ public data class JsonRpcErrorSerializable(
     val data: JsonElement? = null,
 ) {
 
-    /**
-     * Converts this to type-safe version [JsonRpcError].
-     */
+    /** Converts this to type-safe version [JsonRpcError]. */
     public fun typed(): JsonRpcError {
         return JsonRpcError(
             code = code.typed(),
@@ -25,5 +20,4 @@ public data class JsonRpcErrorSerializable(
             data = data,
         )
     }
-
 }

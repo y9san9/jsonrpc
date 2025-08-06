@@ -1,9 +1,6 @@
 package me.y9san9.jsonrpc
 
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.JsonNull
-import kotlinx.serialization.json.longOrNull
 import me.y9san9.jsonrpc.serializable.JsonRpcRequestIdSerializable
 
 /**
@@ -20,10 +17,11 @@ public sealed interface JsonRpcRequestId {
      * variant.
      */
     public fun serializable(): JsonRpcRequestIdSerializable {
-        val primitive =  when (this) {
-            is String -> JsonPrimitive(string)
-            is Long -> JsonPrimitive(long)
-        }
+        val primitive =
+            when (this) {
+                is String -> JsonPrimitive(string)
+                is Long -> JsonPrimitive(long)
+            }
         return JsonRpcRequestIdSerializable(primitive)
     }
 

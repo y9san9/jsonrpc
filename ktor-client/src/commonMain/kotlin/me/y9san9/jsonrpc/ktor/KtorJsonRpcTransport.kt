@@ -17,12 +17,11 @@ import me.y9san9.jsonrpc.JsonRpcTransport
 /**
  * Ktor Client adapter for jsonrpc.
  *
- * JsonRpcTransport represents an ongoing connection which may be closed
- * any time.
+ * JsonRpcTransport represents an ongoing connection which may be closed any
+ * time.
  *
- * May throw [JsonRpcTransportException] without further notice due to it
- * mostly being used inside [JsonRpcTransport.Connector.connect]
- * lambda.
+ * May throw [JsonRpcTransportException] without further notice due to it mostly
+ * being used inside [JsonRpcTransport.Connector.connect] lambda.
  */
 public class KtorClientJsonRpcTransport(
     isActive: StateFlow<Boolean>,
@@ -38,9 +37,9 @@ public class KtorClientJsonRpcTransport(
     override val isActive: StateFlow<Boolean> = isActive
 
     /**
-     * Send message using preferred protocol.
-     * Since JsonRpc is basically a string-based protocol,
-     * it's transport will work with strings and not bytes.
+     * Send message using preferred protocol. Since JsonRpc is basically a
+     * string-based protocol, it's transport will work with strings and not
+     * bytes.
      */
     override suspend fun send(data: String) {
         if (!isActive.value) {
@@ -50,19 +49,16 @@ public class KtorClientJsonRpcTransport(
     }
 
     /**
-     * Receive message using preferred protocol.
-     * This method should throw CancellationException if
-     * no further messages are expected.
+     * Receive message using preferred protocol. This method should throw
+     * CancellationException if no further messages are expected.
      */
     override suspend fun receive(): String {
         if (!isActive.value) {
             error("Socket connection is closed")
         }
 
-        val frame = session
-            .incoming
-            .receiveCatching()
-            .getOrElse { throwable ->
+        val frame =
+            session.incoming.receiveCatching().getOrElse { throwable ->
                 throw IOException("Closed by server", throwable)
             }
 
@@ -84,9 +80,7 @@ public class KtorClientJsonRpcTransport(
         private val request: HttpRequestBuilder.() -> Unit = {},
     ) : JsonRpcTransport.Connector {
 
-        private val httpClient = httpClient.config {
-            install(WebSockets)
-        }
+        private val httpClient = httpClient.config { install(WebSockets) }
 
         /**
          * Establishes a connection which is closed as soon as [block] execution
@@ -97,17 +91,18 @@ public class KtorClientJsonRpcTransport(
          * without further notice.
          */
         override suspend fun <T> connect(
-            block: suspend JsonRpcTransport.() -> T,
+            block: suspend JsonRpcTransport.() -> T
         ): JsonRpcTransport.Result<T> {
             val isActive = MutableStateFlow(true)
             return try {
                 lateinit var result: JsonRpcTransport.Result<T>
                 httpClient.webSocket(url, request) {
                     val session = this
-                    val transport = KtorClientJsonRpcTransport(
-                        session = session,
-                        isActive = isActive,
-                    )
+                    val transport =
+                        KtorClientJsonRpcTransport(
+                            session = session,
+                            isActive = isActive,
+                        )
                     val value = block(transport)
                     result = JsonRpcTransport.Result.Success(value)
                 }

@@ -4,9 +4,8 @@ import kotlinx.serialization.json.JsonElement
 import me.y9san9.jsonrpc.serializable.JsonRpcResponseSerializable
 
 /**
- * When a rpc call is made, the Server MUST reply with a Response, except for
- * in the case of Notifications. The Response is expressed as a single JSON
- * Object.
+ * When a rpc call is made, the Server MUST reply with a Response, except for in
+ * the case of Notifications. The Response is expressed as a single JSON Object.
  */
 public sealed interface JsonRpcResponse : JsonRpcMessage {
     public val jsonrpc: JsonRpcVersion
@@ -35,29 +34,30 @@ public sealed interface JsonRpcResponse : JsonRpcMessage {
     }
 
     /**
-     * When a rpc call is made, the Server MUST reply with a Response, except for
-     * in the case of Notifications. The Response is expressed as a single JSON
-     * Object.
+     * When a rpc call is made, the Server MUST reply with a Response, except
+     * for in the case of Notifications. The Response is expressed as a single
+     * JSON Object.
      */
     public data class Success(
         override val id: JsonRpcResponseId,
         override val result: JsonElement,
         override val jsonrpc: JsonRpcVersion = JsonRpcVersion.Version_2_0,
     ) : JsonRpcResponse {
-        override val error: Nothing? get() = null
+        override val error: Nothing?
+            get() = null
     }
 
     /**
-     * When a rpc call is made, the Server MUST reply with a Response, except for
-     * in the case of Notifications. The Response is expressed as a single JSON
-     * Object.
+     * When a rpc call is made, the Server MUST reply with a Response, except
+     * for in the case of Notifications. The Response is expressed as a single
+     * JSON Object.
      */
     public data class Error(
         override val id: JsonRpcResponseId,
         override val error: JsonRpcError,
         override val jsonrpc: JsonRpcVersion = JsonRpcVersion.Version_2_0,
     ) : JsonRpcResponse {
-        override val result: Nothing? get() = null
+        override val result: Nothing?
+            get() = null
     }
-
 }

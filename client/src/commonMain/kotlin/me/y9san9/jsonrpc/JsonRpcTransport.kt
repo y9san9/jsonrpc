@@ -3,15 +3,14 @@ package me.y9san9.jsonrpc
 import kotlinx.coroutines.flow.StateFlow
 
 /**
- * You can use this library with any underlying transport or
- * library by implementing JsonRpcTransport.Connector interface.
+ * You can use this library with any underlying transport or library by
+ * implementing JsonRpcTransport.Connector interface.
  *
- * JsonRpcTransport represents an ongoing connection which may be closed
- * any time.
+ * JsonRpcTransport represents an ongoing connection which may be closed any
+ * time.
  *
- * May throw [JsonRpcTransportException] without further notice due to it
- * mostly being used inside [JsonRpcTransport.Connector.connect]
- * lambda.
+ * May throw [JsonRpcTransportException] without further notice due to it mostly
+ * being used inside [JsonRpcTransport.Connector.connect] lambda.
  */
 public interface JsonRpcTransport {
     /**
@@ -23,16 +22,15 @@ public interface JsonRpcTransport {
     public val isActive: StateFlow<Boolean>
 
     /**
-     * Send message using preferred protocol.
-     * Since JsonRpc is basically a string-based protocol,
-     * it's transport will work with strings and not bytes.
+     * Send message using preferred protocol. Since JsonRpc is basically a
+     * string-based protocol, it's transport will work with strings and not
+     * bytes.
      */
     public suspend fun send(data: String)
 
     /**
-     * Receive message using preferred protocol.
-     * This method should throw CancellationException if
-     * no further messages are expected.
+     * Receive message using preferred protocol. This method should throw
+     * CancellationException if no further messages are expected.
      */
     public suspend fun receive(): String
 
@@ -51,13 +49,8 @@ public interface JsonRpcTransport {
             val cause: Throwable? = null,
         ) : Result<Nothing>
 
-        /**
-         * A successful execution of [connect] function.
-         */
-        public data class Success<out T>(
-            val value: T,
-        ) : Result<T>
-
+        /** A successful execution of [connect] function. */
+        public data class Success<out T>(val value: T) : Result<T>
     }
 
     /**
@@ -76,7 +69,7 @@ public interface JsonRpcTransport {
          * without further notice.
          */
         public suspend fun <T> connect(
-            block: suspend JsonRpcTransport.() -> T,
+            block: suspend JsonRpcTransport.() -> T
         ): Result<T>
     }
 }

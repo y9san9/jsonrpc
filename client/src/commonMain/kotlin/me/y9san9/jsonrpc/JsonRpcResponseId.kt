@@ -1,7 +1,7 @@
 package me.y9san9.jsonrpc
 
-import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.JsonNull
+import kotlinx.serialization.json.JsonPrimitive
 import me.y9san9.jsonrpc.serializable.JsonRpcResponseIdSerializable
 
 /**
@@ -18,11 +18,12 @@ public sealed interface JsonRpcResponseId {
      * variant.
      */
     public fun serializable(): JsonRpcResponseIdSerializable {
-        val jsonPrimitive = when (this) {
-            is String -> JsonPrimitive(string)
-            is Long -> JsonPrimitive(long)
-            is Null -> JsonNull
-        }
+        val jsonPrimitive =
+            when (this) {
+                is String -> JsonPrimitive(string)
+                is Long -> JsonPrimitive(long)
+                is Null -> JsonNull
+            }
         return JsonRpcResponseIdSerializable(jsonPrimitive)
     }
 
@@ -39,8 +40,8 @@ public sealed interface JsonRpcResponseId {
     public data class Long(val long: kotlin.Long) : JsonRpcResponseId
 
     /**
-     * Null is ONLY used for responses to requests without any valid ID.
-     * Do not use it for notifications.
+     * Null is ONLY used for responses to requests without any valid ID. Do not
+     * use it for notifications.
      */
     public data object Null : JsonRpcResponseId
 }

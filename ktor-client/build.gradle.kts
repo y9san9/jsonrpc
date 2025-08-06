@@ -6,6 +6,7 @@ plugins {
 }
 
 group = "me.y9san9.jsonrpc"
+
 version = libs.versions.jsonrpc.get()
 
 kotlin {
@@ -55,7 +56,7 @@ mavenPublishing {
         }
 
         scm {
-            connection ="scm:git:ssh://github.com/y9san9/jsonrpc.git"
+            connection = "scm:git:ssh://github.com/y9san9/jsonrpc.git"
             developerConnection = "scm:git:ssh://github.com/y9san9/jsonrpc.git"
             url = "https://github.com/y9san9/jsonrpc"
         }

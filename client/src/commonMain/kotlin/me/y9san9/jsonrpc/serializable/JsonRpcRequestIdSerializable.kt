@@ -3,19 +3,15 @@ package me.y9san9.jsonrpc.serializable
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.JsonNull
-import kotlinx.serialization.json.longOrNull
 import kotlinx.serialization.json.long
+import kotlinx.serialization.json.longOrNull
 import me.y9san9.jsonrpc.JsonRpcRequestId
 
-/**
- * Serializable variant of [JsonRpcRequestId].
- * Read the documentation there.
- */
+/** Serializable variant of [JsonRpcRequestId]. Read the documentation there. */
 @Serializable
 @JvmInline
 public value class JsonRpcRequestIdSerializable(
-    public val jsonPrimitive: JsonPrimitive,
+    public val jsonPrimitive: JsonPrimitive
 ) {
     init {
         check()
@@ -27,9 +23,7 @@ public value class JsonRpcRequestIdSerializable(
         throw SerializationException("Must be either String or Long")
     }
 
-    /**
-     * Converts this to type-safe version [JsonRpcRequestId].
-     */
+    /** Converts this to type-safe version [JsonRpcRequestId]. */
     public fun typed(): JsonRpcRequestId {
         if (jsonPrimitive.isString) {
             return JsonRpcRequestId.String(jsonPrimitive.content)
@@ -39,5 +33,4 @@ public value class JsonRpcRequestIdSerializable(
         }
         error("Unreachable code")
     }
-
 }

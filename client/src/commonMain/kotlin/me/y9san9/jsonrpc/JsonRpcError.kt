@@ -13,8 +13,7 @@ public data class JsonRpcError(
     val data: JsonElement?,
 ) {
     /**
-     * Convert this type to a serializable [JsonRpcErrorSerializable]
-     * variant.
+     * Convert this type to a serializable [JsonRpcErrorSerializable] variant.
      */
     public fun serializable(): JsonRpcErrorSerializable {
         return JsonRpcErrorSerializable(

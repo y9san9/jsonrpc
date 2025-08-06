@@ -7,15 +7,10 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import me.y9san9.jsonrpc.JsonRpcParams
 
-/**
- * Serializable variant of [JsonRpcRequest].
- * Read the documentation there.
- */
+/** Serializable variant of [JsonRpcRequest]. Read the documentation there. */
 @Serializable
 @JvmInline
-public value class JsonRpcParamsSerializable(
-    public val json: JsonElement,
-) {
+public value class JsonRpcParamsSerializable(public val json: JsonElement) {
     init {
         check()
     }
@@ -26,9 +21,7 @@ public value class JsonRpcParamsSerializable(
         throw SerializationException("JsonRpcParams must a structure")
     }
 
-    /**
-     * Converts this to type-safe [JsonRpcParams].
-     */
+    /** Converts this to type-safe [JsonRpcParams]. */
     public fun typed(): JsonRpcParams {
         if (json is JsonObject) return JsonRpcParams.Object(json)
         if (json is JsonArray) return JsonRpcParams.Array(json)

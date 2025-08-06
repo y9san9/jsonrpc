@@ -13,8 +13,7 @@ public sealed interface JsonRpcParams {
     public val json: JsonElement
 
     /**
-     * Convert this type to a serializable [JsonRpcParamsSerializable]
-     * variant.
+     * Convert this type to a serializable [JsonRpcParamsSerializable] variant.
      */
     public fun serializable(): JsonRpcParamsSerializable {
         return when (this) {
@@ -28,16 +27,12 @@ public sealed interface JsonRpcParams {
      * invocation of the method.
      */
     @JvmInline
-    public value class Object(
-        override val json: JsonObject,
-    ) : JsonRpcParams
+    public value class Object(override val json: JsonObject) : JsonRpcParams
 
     /**
      * A Structured value that holds the parameter values to be used during the
      * invocation of the method.
      */
     @JvmInline
-    public value class Array(
-        override val json: JsonArray,
-    ) : JsonRpcParams
+    public value class Array(override val json: JsonArray) : JsonRpcParams
 }

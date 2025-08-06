@@ -1,9 +1,9 @@
 package me.y9san9.jsonrpc
 
 /**
- * Whether [JsonRpc] acts as a client or server. These terms are
- * used in the JSON-RPC 2.0 Specification and the library will act
- * differently an a specific set of cases depending on that information.
+ * Whether [JsonRpc] acts as a client or server. These terms are used in the
+ * JSON-RPC 2.0 Specification and the library will act differently an a specific
+ * set of cases depending on that information.
  *
  * Check inheritors for more information.
  */

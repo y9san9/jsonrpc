@@ -4,14 +4,11 @@ import kotlin.coroutines.coroutineContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.async
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
@@ -43,11 +40,15 @@ internal class JsonRpcIncomingEngine(
     private suspend fun handleIncoming(string: String) {
         val element = config.json.parseToJsonElement(string)
 
-        val json = when (element) {
-            is JsonArray -> element
-            is JsonObject -> listOf(element)
-            else -> throw JsonRpcTransportException("Unknown structure received: $element")
-        }
+        val json =
+            when (element) {
+                is JsonArray -> element
+                is JsonObject -> listOf(element)
+                else ->
+                    throw JsonRpcTransportException(
+                        "Unknown structure received: $element"
+                    )
+            }
 
         val responsesCause = handleResponses(json)
         if (responsesCause == null) return
@@ -62,41 +63,39 @@ internal class JsonRpcIncomingEngine(
             Responses cause: $responsesCause
 
             Requests cause: $requestsCause
-            """.trimIndent()
+            """
+                .trimIndent()
         )
     }
 
     private fun handleResponses(json: List<JsonElement>): Throwable? {
-        val serializable: List<JsonRpcResponseSerializable> = try {
-            json.map { element ->
-                config.json.decodeFromJsonElement(element)
+        val serializable: List<JsonRpcResponseSerializable> =
+            try {
+                json.map { element ->
+                    config.json.decodeFromJsonElement(element)
+                }
+            } catch (e: SerializationException) {
+                return e
             }
-        } catch (e: SerializationException) {
-            return e
-        }
         val responses = serializable.map { response -> response.typed() }
         for (response in responses) {
-            launchNow {
-                _responses.emit(response)
-            }
+            launchNow { _responses.emit(response) }
         }
         return null
     }
 
-
     private fun handleRequests(json: List<JsonElement>): Throwable? {
-        val serializable: List<JsonRpcRequestSerializable> = try {
-            json.map { element ->
-                config.json.decodeFromJsonElement(element)
+        val serializable: List<JsonRpcRequestSerializable> =
+            try {
+                json.map { element ->
+                    config.json.decodeFromJsonElement(element)
+                }
+            } catch (e: SerializationException) {
+                return e
             }
-        } catch (e: SerializationException) {
-            return e
-        }
         val requests = serializable.map { request -> request.typed() }
         for (request in requests) {
-            launchNow {
-                _requests.emit(request)
-            }
+            launchNow { _requests.emit(request) }
         }
         return null
     }
@@ -108,5 +107,4 @@ internal class JsonRpcIncomingEngine(
             block()
         }
     }
-
 }

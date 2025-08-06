@@ -1,11 +1,5 @@
 package me.y9san9.jsonrpc
 
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonNull
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
 import me.y9san9.jsonrpc.serializable.JsonRpcRequestSerializable
 
 /**
@@ -18,8 +12,7 @@ public sealed interface JsonRpcRequest : JsonRpcMessage {
     public val id: JsonRpcRequestId?
 
     /**
-     * Convert this type to a serializable [JsonRpcRequestSerializable]
-     * variant.
+     * Convert this type to a serializable [JsonRpcRequestSerializable] variant.
      */
     public fun serializable(): JsonRpcRequestSerializable {
         return JsonRpcRequestSerializable(
@@ -29,5 +22,4 @@ public sealed interface JsonRpcRequest : JsonRpcMessage {
             id = id?.serializable(),
         )
     }
-
 }

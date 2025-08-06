@@ -5,10 +5,7 @@ import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.JsonElement
 import me.y9san9.jsonrpc.JsonRpcResponse
 
-/**
- * Serializable variant of [JsonRpcResponse].
- * Read the documentation there.
- */
+/** Serializable variant of [JsonRpcResponse]. Read the documentation there. */
 @Serializable
 public data class JsonRpcResponseSerializable(
     val jsonrpc: JsonRpcVersionSerializable,
@@ -25,13 +22,14 @@ public data class JsonRpcResponseSerializable(
             throw SerializationException("Can't parse both result and error")
         }
         if (result == null && error == null) {
-            throw SerializationException("At least result or error should be present")
+            throw SerializationException(
+                "At least result or error should be present"
+            )
         }
     }
 
     /**
-     * Serializable variant of [JsonRpcResponse].
-     * Read the documentation there.
+     * Serializable variant of [JsonRpcResponse]. Read the documentation there.
      */
     public fun typed(): JsonRpcResponse {
         return if (result != null) {

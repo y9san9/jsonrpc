@@ -1,14 +1,11 @@
 package me.y9san9.jsonrpc.serializable
 
 import kotlinx.serialization.Serializable
-import me.y9san9.jsonrpc.JsonRpcRequest
 import me.y9san9.jsonrpc.JsonRpcMethod
 import me.y9san9.jsonrpc.JsonRpcNotification
+import me.y9san9.jsonrpc.JsonRpcRequest
 
-/**
- * Serializable variant of [JsonRpcRequest].
- * Read the documentation there.
- */
+/** Serializable variant of [JsonRpcRequest]. Read the documentation there. */
 @Serializable
 public data class JsonRpcRequestSerializable(
     val jsonrpc: JsonRpcVersionSerializable,
@@ -16,9 +13,7 @@ public data class JsonRpcRequestSerializable(
     val method: JsonRpcMethodNameSerializable,
     val params: JsonRpcParamsSerializable? = null,
 ) {
-    /**
-     * Converts this to type-safe [JsonRpcRequest].
-     */
+    /** Converts this to type-safe [JsonRpcRequest]. */
     public fun typed(): JsonRpcRequest {
         return if (id == null) {
             JsonRpcNotification(
@@ -35,6 +30,4 @@ public data class JsonRpcRequestSerializable(
             )
         }
     }
-
 }
-

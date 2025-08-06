@@ -3,7 +3,6 @@ package me.y9san9.jsonrpc
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart.UNDISPATCHED
 import kotlinx.coroutines.awaitCancellation
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
@@ -17,7 +16,11 @@ internal class JsonRpcRequestEngine(
     private val backgroundScope: CoroutineScope,
     private val incomingEngine: JsonRpcIncomingEngine,
 ) {
-    private val handlers = mutableMapOf<JsonRpcMethodName, MutableSet<SendChannel<JsonRpcRequest>>>()
+    private val handlers =
+        mutableMapOf<
+            JsonRpcMethodName,
+            MutableSet<SendChannel<JsonRpcRequest>>,
+        >()
     private val mutex = Mutex()
 
     fun start() {
