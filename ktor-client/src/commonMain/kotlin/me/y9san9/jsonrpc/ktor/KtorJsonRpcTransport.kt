@@ -8,10 +8,14 @@ import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.websocket.Frame
 import io.ktor.websocket.readText
 import io.ktor.websocket.send
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.channels.ClosedReceiveChannelException
+import kotlinx.coroutines.channels.ClosedSendChannelException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.io.IOException
 import me.y9san9.jsonrpc.JsonRpcTransport
+import me.y9san9.jsonrpc.JsonRpcTransportException
 
 /**
  * Ktors default is 'no ping'. This is unacceptable, because there is no way to
@@ -47,19 +51,66 @@ public class KtorJsonRpcTransport(
      * string-based protocol, it's transport will work with strings and not
      * bytes.
      *
-     * This method can throw IOException to indicate that transport was closed.
+     * This method can throw [JsonRpcTransportException] to indicate that
+     * transport was closed.
      */
     override suspend fun send(data: String) {
-        session.outgoing.send(Frame.Text(data))
+        try {
+            session.outgoing.send(Frame.Text(data))
+        } catch (throwable: Throwable) {
+            if (throwable is CancellationException) {
+                throw throwable
+            }
+            if (throwable is ClosedSendChannelException) {
+                if (throwable.cause == null) {
+                    throw JsonRpcTransportException(
+                        message = "Closed normally with Frame.Close",
+                    )
+                } else {
+                    throw JsonRpcTransportException(
+                        message = "outgoing.send() failed",
+                        cause = throwable.cause,
+                    )
+                }
+            }
+            throw JsonRpcTransportException(
+                message = "outgoing.send() failed",
+                cause = throwable,
+            )
+        }
     }
 
     /**
-     * Receive message using preferred protocol.
+     * Receive message using preferred protocol. Returns null if closed
+     * normally.
      *
-     * This method can throw IOException to indicate that transport was closed.
+     * This method can throw [JsonRpcTransportException] to indicate that
+     * transport was closed with exception.
      */
     override suspend fun receive(): String {
-        val frame = session.incoming.receive()
+        val frame = try {
+            session.incoming.receive()
+        } catch (throwable: Throwable) {
+            if (throwable is CancellationException) {
+                throw throwable
+            }
+            if (throwable is ClosedReceiveChannelException) {
+                if (throwable.cause == null) {
+                    throw JsonRpcTransportException(
+                        message = "Closed normally with Frame.Close",
+                    )
+                } else {
+                    throw JsonRpcTransportException(
+                        message = "incoming.receive() failed",
+                        cause = throwable.cause,
+                    )
+                }
+            }
+            throw JsonRpcTransportException(
+                message = "incoming.receive() failed",
+                cause = throwable,
+            )
+        }
 
         if (frame !is Frame.Text) {
             error("Websocket should only send text frames")
@@ -109,11 +160,20 @@ public class KtorJsonRpcTransport(
                     result = JsonRpcTransport.Result.Success(value)
                 }
                 result
-            } catch (exception: IOException) {
-                JsonRpcTransport.Result.TransportFailure(
-                    message = exception.message,
-                    cause = exception,
-                )
+            } catch (throwable: Throwable) {
+                if (throwable is JsonRpcTransportException) {
+                    return JsonRpcTransport.Result.TransportFailure(
+                        message = throwable.message,
+                        cause = throwable,
+                    )
+                }
+                if (throwable is IOException) {
+                    return JsonRpcTransport.Result.TransportFailure(
+                        message = "httpClient.webSocket() failed",
+                        cause = throwable,
+                    )
+                }
+                throw throwable
             } finally {
                 isActive.value = false
             }
