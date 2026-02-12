@@ -32,11 +32,10 @@ public interface JsonRpcTransport {
     public suspend fun send(data: String)
 
     /**
-     * Receive message using preferred protocol. Returns null if closed
-     * normally.
+     * Receive message using preferred protocol.
      *
      * This method can throw [JsonRpcTransportException] to indicate that
-     * transport was closed with exception.
+     * transport was closed.
      */
     public suspend fun receive(): String
 

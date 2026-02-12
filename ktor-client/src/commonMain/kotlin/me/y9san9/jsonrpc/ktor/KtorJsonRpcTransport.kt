@@ -57,58 +57,57 @@ public class KtorJsonRpcTransport(
     override suspend fun send(data: String) {
         try {
             session.outgoing.send(Frame.Text(data))
-        } catch (throwable: Throwable) {
-            if (throwable is CancellationException) {
-                throw throwable
+        } catch (exception: Exception) {
+            if (exception is CancellationException) {
+                throw exception
             }
-            if (throwable is ClosedSendChannelException) {
-                if (throwable.cause == null) {
+            if (exception is ClosedSendChannelException) {
+                if (exception.cause == null) {
                     throw JsonRpcTransportException(
                         message = "Closed normally with Frame.Close",
                     )
                 } else {
                     throw JsonRpcTransportException(
                         message = "outgoing.send() failed",
-                        cause = throwable.cause,
+                        cause = exception.cause,
                     )
                 }
             }
             throw JsonRpcTransportException(
                 message = "outgoing.send() failed",
-                cause = throwable,
+                cause = exception,
             )
         }
     }
 
     /**
-     * Receive message using preferred protocol. Returns null if closed
-     * normally.
+     * Receive message using preferred protocol.
      *
      * This method can throw [JsonRpcTransportException] to indicate that
-     * transport was closed with exception.
+     * transport was closed.
      */
     override suspend fun receive(): String {
         val frame = try {
             session.incoming.receive()
-        } catch (throwable: Throwable) {
-            if (throwable is CancellationException) {
-                throw throwable
+        } catch (exception: Exception) {
+            if (exception is CancellationException) {
+                throw exception
             }
-            if (throwable is ClosedReceiveChannelException) {
-                if (throwable.cause == null) {
+            if (exception is ClosedReceiveChannelException) {
+                if (exception.cause == null) {
                     throw JsonRpcTransportException(
                         message = "Closed normally with Frame.Close",
                     )
                 } else {
                     throw JsonRpcTransportException(
                         message = "incoming.receive() failed",
-                        cause = throwable.cause,
+                        cause = exception.cause,
                     )
                 }
             }
             throw JsonRpcTransportException(
                 message = "incoming.receive() failed",
-                cause = throwable,
+                cause = exception,
             )
         }
 
