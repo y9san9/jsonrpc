@@ -1,6 +1,5 @@
 package me.y9san9.jsonrpc
 
-import kotlin.coroutines.coroutineContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
@@ -14,6 +13,7 @@ import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.encodeToJsonElement
+import kotlin.coroutines.coroutineContext
 
 /**
  * JsonRpc is a complete implementation of JsonRpc 2.0 specification
@@ -83,9 +83,8 @@ private constructor(
     }
 
     /** Execute [request] according to the specification. */
-    public suspend fun execute(request: JsonRpcRequest): JsonRpcResponse {
-        return executeOrThrow(listOf(request)).first()
-    }
+    public suspend fun execute(request: JsonRpcRequest): JsonRpcResponse =
+        execute(listOf(request)).first()
 
     /**
      * Execute [requests] according to the specification.
@@ -98,17 +97,19 @@ private constructor(
      * @returns a list of responses that has length the same as methods amount
      *   inside requests list (since notifications don't have response)
      */
-    public suspend fun executeOrThrow(
-        requests: List<JsonRpcRequest>
+    public suspend fun execute(
+        requests: List<JsonRpcRequest>,
     ): List<JsonRpcResponse> {
         require(requests.isNotEmpty()) { "Nothing to execute" }
+        if (requests.size > 1 && !config.batchRequests) {
+            return requests.map { request -> execute(request) }
+        }
         val serializable = requests.map { request -> request.serializable() }
-        val json =
-            if (config.batchRequests && requests.size > 1) {
-                config.json.encodeToString(serializable)
-            } else {
-                config.json.encodeToString(serializable.first())
-            }
+        val json = if (requests.size > 1) {
+            config.json.encodeToString(serializable)
+        } else {
+            config.json.encodeToString(serializable.first())
+        }
         return coroutineScope {
             val deferred =
                 requests.filterIsInstance<JsonRpcMethod>().map { request ->
@@ -125,7 +126,7 @@ private constructor(
      * notification.
      */
     public suspend fun respond(response: JsonRpcResponse) {
-        respondOrThrow(listOf(response))
+        respond(listOf(response))
     }
 
     /**
@@ -135,7 +136,7 @@ private constructor(
      *
      * Throws if [responses] are empty.
      */
-    public suspend fun respondOrThrow(responses: List<JsonRpcResponse>) {
+    public suspend fun respond(responses: List<JsonRpcResponse>) {
         require(responses.isNotEmpty()) { "Nothing to respond with" }
         val serializable = responses.map { response -> response.serializable() }
         val json =
@@ -153,9 +154,7 @@ private constructor(
      * Throws if params serializer is not found or if it's not structure or
      * list.
      */
-    public inline fun <reified T> encodeParamsOrThrow(
-        params: T
-    ): JsonRpcParams {
+    public inline fun <reified T> encodeParams(params: T): JsonRpcParams {
         val encoded = config.json.encodeToJsonElement(params)
         if (encoded is JsonArray) {
             return JsonRpcParams.Array(encoded)
@@ -171,20 +170,16 @@ private constructor(
      *
      * Throws [SerializationException] if can't decode.
      */
-    public inline fun <reified T> decodeResultOrThrow(
-        request: JsonRpcResponse.Success
-    ): T {
-        return config.json.decodeFromJsonElement(request.result)
-    }
+    public inline fun <reified T> decodeResult(
+        request: JsonRpcResponse.Success,
+    ): T = config.json.decodeFromJsonElement(request.result)
 
     /**
      * Decode params of request using [config.json].
      *
      * Throws [SerializationException] if can't decode.
      */
-    public inline fun <reified T> decodeParamsOrThrow(
-        request: JsonRpcRequest
-    ): T {
+    public inline fun <reified T> decodeParams(request: JsonRpcRequest): T {
         val params = request.params
         if (params == null) {
             if (null is T) {
@@ -196,8 +191,9 @@ private constructor(
         return config.json.decodeFromJsonElement(params.json)
     }
 
-    // Intentionally left empty to have the ability to add extension functions
-    public companion object {}
+    public companion object {
+        // Intentionally left empty to have the ability to add extension functions
+    }
 
     /**
      * Type-safe result that contains transport error if any occurred during
@@ -238,7 +234,7 @@ private constructor(
          * without further notice.
          */
         public suspend fun <T> connect(
-            block: suspend JsonRpc.() -> T
+            block: suspend JsonRpc.() -> T,
         ): Result<T> {
             val result =
                 transport.connect {

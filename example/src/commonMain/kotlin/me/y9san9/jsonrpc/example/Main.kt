@@ -1,18 +1,12 @@
 package me.y9san9.jsonrpc.example
 
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.job
+import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.decodeFromJsonElement
-import kotlinx.serialization.json.put
 import me.y9san9.jsonrpc.JsonRpc
-import me.y9san9.jsonrpc.JsonRpcRequest
 import me.y9san9.jsonrpc.JsonRpcMethod
 import me.y9san9.jsonrpc.JsonRpcMethodName
-import me.y9san9.jsonrpc.JsonRpcParams
 import me.y9san9.jsonrpc.ktor.websocket
 
 @Serializable
@@ -22,7 +16,7 @@ suspend fun JsonRpc.setHeartbeat(interval: Int) {
     val id = nextId()
     val name = JsonRpcMethodName("public/set_heartbeat")
     val params = SetHeartbeatParams(interval)
-    val encodedParams = encodeParamsOrThrow(params)
+    val encodedParams = encodeParams(params)
     val method = JsonRpcMethod(id, name, encodedParams)
     execute(method)
 }
@@ -50,7 +44,7 @@ suspend fun main() {
     val result = rpc.connect {
         val name = JsonRpcMethodName("heartbeat")
         incoming.onRequest(name) { method ->
-            val heartbeat: Heartbeat = decodeParamsOrThrow(method)
+            val heartbeat: Heartbeat = decodeParams(method)
             if (heartbeat.type == "test_request") {
                 test()
             }
@@ -60,11 +54,18 @@ suspend fun main() {
         print("Test: ")
         println(setHeartbeat(interval = 10))
 
+        backgroundScope.launch {
+            // while (true) {}
+        }
+
+        scope.coroutineContext.job.invokeOnCompletion {
+            println(">0 Something's happening $it")
+        }
+
         // val book: Flow<JsonRpcRequest> = incoming.notifications("book.ETH-PERPETUAL.100.1.100ms")
         // subscribe("book.ETH-PERPETUAL.100.1.100ms")
         // book.take(10).collect { }
         // unsubscribe("book.ETH-PERPETUAL.100.1.100ms")
-
 
         // incoming.requests { flow ->
         //     flow.take(0).collect {

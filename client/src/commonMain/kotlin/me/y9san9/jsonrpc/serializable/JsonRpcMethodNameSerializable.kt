@@ -10,7 +10,5 @@ import me.y9san9.jsonrpc.JsonRpcMethodName
 @JvmInline
 public value class JsonRpcMethodNameSerializable(public val string: String) {
     /** Converts this to type-safe version [JsonRpcMethodName]. */
-    public fun typed(): JsonRpcMethodName {
-        return JsonRpcMethodName(string)
-    }
+    public fun typed(): JsonRpcMethodName = JsonRpcMethodName(string)
 }

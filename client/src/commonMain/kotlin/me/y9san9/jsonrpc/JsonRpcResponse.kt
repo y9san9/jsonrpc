@@ -17,20 +17,17 @@ public sealed interface JsonRpcResponse : JsonRpcMessage {
      * Convert this type to a serializable [JsonRpcResponseSerializable]
      * variant.
      */
-    public fun serializable(): JsonRpcResponseSerializable {
-        return JsonRpcResponseSerializable(
+    public fun serializable(): JsonRpcResponseSerializable =
+        JsonRpcResponseSerializable(
             jsonrpc = jsonrpc.serializable(),
             id = id.serializable(),
             result = result,
             error = error?.serializable(),
         )
-    }
 
-    public fun successOrThrow(): Success {
-        return when (this) {
-            is Success -> this
-            is Error -> error("Can't get success from $this")
-        }
+    public fun successOrThrow(): Success = when (this) {
+        is Success -> this
+        is Error -> error("Can't get success from $this")
     }
 
     /**

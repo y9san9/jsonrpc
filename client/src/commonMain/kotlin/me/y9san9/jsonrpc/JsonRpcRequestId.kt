@@ -42,9 +42,7 @@ public sealed interface JsonRpcRequestId {
  * Converts request id to response id when identifier is no longer used for
  * request.
  */
-public fun JsonRpcRequestId.toResponseId(): JsonRpcResponseId {
-    return when (this) {
-        is JsonRpcRequestId.String -> JsonRpcResponseId.String(string)
-        is JsonRpcRequestId.Long -> JsonRpcResponseId.Long(long)
-    }
+public fun JsonRpcRequestId.toResponseId(): JsonRpcResponseId = when (this) {
+    is JsonRpcRequestId.String -> JsonRpcResponseId.String(string)
+    is JsonRpcRequestId.Long -> JsonRpcResponseId.Long(long)
 }

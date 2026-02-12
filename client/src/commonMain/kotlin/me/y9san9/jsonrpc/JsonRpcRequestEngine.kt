@@ -3,8 +3,10 @@ package me.y9san9.jsonrpc
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart.UNDISPATCHED
 import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.channels.Channel.Factory.UNLIMITED
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.buffer
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -20,7 +22,7 @@ internal class JsonRpcRequestEngine(
         mutableMapOf<
             JsonRpcMethodName,
             MutableSet<SendChannel<JsonRpcRequest>>,
-        >()
+            >()
     private val mutex = Mutex()
 
     fun start() {
@@ -29,24 +31,20 @@ internal class JsonRpcRequestEngine(
                 val channels = mutex.withLock { handlers[request.method] }
                 channels ?: return@collect
                 for (channel in channels) {
-                    backgroundScope.launch(start = UNDISPATCHED) {
-                        channel.send(request)
-                    }
+                    channel.trySend(request)
                 }
             }
         }
     }
 
-    fun flow(method: JsonRpcMethodName): Flow<JsonRpcRequest> {
-        return channelFlow {
-            try {
-                mutex.withLock {
-                    handlers.getOrPut(method) { mutableSetOf() } += channel
-                }
-                awaitCancellation()
-            } finally {
-                mutex.withLock { handlers.getValue(method) -= channel }
+    fun flow(method: JsonRpcMethodName): Flow<JsonRpcRequest> = channelFlow {
+        try {
+            mutex.withLock {
+                handlers.getOrPut(method) { mutableSetOf() } += channel
             }
+            awaitCancellation()
+        } finally {
+            mutex.withLock { handlers.getValue(method) -= channel }
         }
-    }
+    }.buffer(UNLIMITED)
 }

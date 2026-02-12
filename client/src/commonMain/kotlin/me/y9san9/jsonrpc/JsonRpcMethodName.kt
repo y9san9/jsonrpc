@@ -14,7 +14,6 @@ public value class JsonRpcMethodName(public val string: String) {
      * Convert this type to a serializable [JsonRpcMethodNameSerializable]
      * variant.
      */
-    public fun serializable(): JsonRpcMethodNameSerializable {
-        return JsonRpcMethodNameSerializable(string)
-    }
+    public fun serializable(): JsonRpcMethodNameSerializable =
+        JsonRpcMethodNameSerializable(string)
 }

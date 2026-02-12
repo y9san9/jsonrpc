@@ -14,12 +14,11 @@ public sealed interface JsonRpcRequest : JsonRpcMessage {
     /**
      * Convert this type to a serializable [JsonRpcRequestSerializable] variant.
      */
-    public fun serializable(): JsonRpcRequestSerializable {
-        return JsonRpcRequestSerializable(
+    public fun serializable(): JsonRpcRequestSerializable =
+        JsonRpcRequestSerializable(
             jsonrpc = jsonrpc.serializable(),
             method = method.serializable(),
             params = params?.serializable(),
             id = id?.serializable(),
         )
-    }
 }

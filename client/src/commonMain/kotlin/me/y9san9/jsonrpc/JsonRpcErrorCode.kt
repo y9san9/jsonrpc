@@ -13,9 +13,8 @@ public value class JsonRpcErrorCode(public val int: Int) {
      * Convert this type to a serializable [JsonRpcErrorCodeSerializable]
      * variant.
      */
-    public fun serializable(): JsonRpcErrorCodeSerializable {
-        return JsonRpcErrorCodeSerializable(int)
-    }
+    public fun serializable(): JsonRpcErrorCodeSerializable =
+        JsonRpcErrorCodeSerializable(int)
 
     public companion object {
         /**

@@ -23,7 +23,7 @@ public data class JsonRpcResponseSerializable(
         }
         if (result == null && error == null) {
             throw SerializationException(
-                "At least result or error should be present"
+                "At least result or error should be present",
             )
         }
     }
@@ -31,21 +31,19 @@ public data class JsonRpcResponseSerializable(
     /**
      * Serializable variant of [JsonRpcResponse]. Read the documentation there.
      */
-    public fun typed(): JsonRpcResponse {
-        return if (result != null) {
-            JsonRpcResponse.Success(
-                jsonrpc = jsonrpc.typed(),
-                id = id.typed(),
-                result = result,
-            )
-        } else if (error != null) {
-            JsonRpcResponse.Error(
-                jsonrpc = jsonrpc.typed(),
-                id = id.typed(),
-                error = error.typed(),
-            )
-        } else {
-            error("Unreachable code")
-        }
+    public fun typed(): JsonRpcResponse = if (result != null) {
+        JsonRpcResponse.Success(
+            jsonrpc = jsonrpc.typed(),
+            id = id.typed(),
+            result = result,
+        )
+    } else if (error != null) {
+        JsonRpcResponse.Error(
+            jsonrpc = jsonrpc.typed(),
+            id = id.typed(),
+            error = error.typed(),
+        )
+    } else {
+        error("Unreachable code")
     }
 }

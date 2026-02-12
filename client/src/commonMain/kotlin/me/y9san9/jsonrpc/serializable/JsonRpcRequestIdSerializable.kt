@@ -11,7 +11,7 @@ import me.y9san9.jsonrpc.JsonRpcRequestId
 @Serializable
 @JvmInline
 public value class JsonRpcRequestIdSerializable(
-    public val jsonPrimitive: JsonPrimitive
+    public val jsonPrimitive: JsonPrimitive,
 ) {
     init {
         check()

@@ -48,9 +48,7 @@ internal constructor(
     public fun onRequest(
         scope: CoroutineScope = rpc.scope,
         block: suspend (JsonRpcRequest) -> Unit,
-    ): Job {
-        return scope.launch(start = UNDISPATCHED) { requestsRaw.collect(block) }
-    }
+    ): Job = scope.launch(start = UNDISPATCHED) { requestsRaw.collect(block) }
 
     /**
      * This may be dangerous to use this property. See `docs/FlowPitfall.md` for
@@ -59,9 +57,8 @@ internal constructor(
      * Underlying implementation uses hashmap to route requests by name which is
      * a huge optimization instead of doing filters.
      */
-    public fun requestsRaw(method: JsonRpcMethodName): Flow<JsonRpcRequest> {
-        return requestEngine.flow(method)
-    }
+    public fun requestsRaw(method: JsonRpcMethodName): Flow<JsonRpcRequest> =
+        requestEngine.flow(method)
 
     /**
      * Simple accessor for [requestsRaw] that launches a job and collect
@@ -86,10 +83,8 @@ internal constructor(
         method: JsonRpcMethodName,
         scope: CoroutineScope = rpc.scope,
         block: suspend (JsonRpcRequest) -> Unit,
-    ): Job {
-        return scope.launch(start = UNDISPATCHED) {
-            requestsRaw(method).collect(block)
-        }
+    ): Job = scope.launch(start = UNDISPATCHED) {
+        requestsRaw(method).collect(block)
     }
 
     /**
@@ -121,9 +116,7 @@ internal constructor(
     public fun onResponse(
         scope: CoroutineScope = rpc.scope,
         block: suspend (JsonRpcResponse) -> Unit,
-    ): Job {
-        return scope.launch(start = UNDISPATCHED) {
-            responsesRaw.collect(block)
-        }
+    ): Job = scope.launch(start = UNDISPATCHED) {
+        responsesRaw.collect(block)
     }
 }

@@ -13,7 +13,6 @@ public value class JsonRpcErrorMessage(public val string: String) {
      * Convert this type to a serializable [JsonRpcErrorMessageSerializable]
      * variant.
      */
-    public fun serializable(): JsonRpcErrorMessageSerializable {
-        return JsonRpcErrorMessageSerializable(string)
-    }
+    public fun serializable(): JsonRpcErrorMessageSerializable =
+        JsonRpcErrorMessageSerializable(string)
 }

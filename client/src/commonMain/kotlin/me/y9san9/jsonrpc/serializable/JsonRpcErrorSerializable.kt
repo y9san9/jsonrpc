@@ -13,11 +13,9 @@ public data class JsonRpcErrorSerializable(
 ) {
 
     /** Converts this to type-safe version [JsonRpcError]. */
-    public fun typed(): JsonRpcError {
-        return JsonRpcError(
-            code = code.typed(),
-            message = message.typed(),
-            data = data,
-        )
-    }
+    public fun typed(): JsonRpcError = JsonRpcError(
+        code = code.typed(),
+        message = message.typed(),
+        data = data,
+    )
 }

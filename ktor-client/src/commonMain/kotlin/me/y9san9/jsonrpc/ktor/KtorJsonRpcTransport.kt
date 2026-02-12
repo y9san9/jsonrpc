@@ -8,11 +8,17 @@ import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.websocket.Frame
 import io.ktor.websocket.readText
 import io.ktor.websocket.send
-import kotlinx.coroutines.channels.getOrElse
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.io.IOException
 import me.y9san9.jsonrpc.JsonRpcTransport
+
+/**
+ * Ktors default is 'no ping'. This is unacceptable, because there is no way to
+ * determine whether connection was dropped or not without pings. That is why we
+ * introduce a new default.
+ */
+public const val DEFAULT_PING_INTERVAL_MILLIS: Long = 5_000
 
 /**
  * Ktor Client adapter for jsonrpc.
@@ -23,7 +29,7 @@ import me.y9san9.jsonrpc.JsonRpcTransport
  * May throw [JsonRpcTransportException] without further notice due to it mostly
  * being used inside [JsonRpcTransport.Connector.connect] lambda.
  */
-public class KtorClientJsonRpcTransport(
+public class KtorJsonRpcTransport(
     isActive: StateFlow<Boolean>,
     private val session: DefaultClientWebSocketSession,
 ) : JsonRpcTransport {
@@ -40,27 +46,20 @@ public class KtorClientJsonRpcTransport(
      * Send message using preferred protocol. Since JsonRpc is basically a
      * string-based protocol, it's transport will work with strings and not
      * bytes.
+     *
+     * This method can throw IOException to indicate that transport was closed.
      */
     override suspend fun send(data: String) {
-        if (!isActive.value) {
-            error("Socket connection is closed")
-        }
-        session.send(data)
+        session.outgoing.send(Frame.Text(data))
     }
 
     /**
-     * Receive message using preferred protocol. This method should throw
-     * CancellationException if no further messages are expected.
+     * Receive message using preferred protocol.
+     *
+     * This method can throw IOException to indicate that transport was closed.
      */
     override suspend fun receive(): String {
-        if (!isActive.value) {
-            error("Socket connection is closed")
-        }
-
-        val frame =
-            session.incoming.receiveCatching().getOrElse { throwable ->
-                throw IOException("Closed by server", throwable)
-            }
+        val frame = session.incoming.receive()
 
         if (frame !is Frame.Text) {
             error("Websocket should only send text frames")
@@ -77,10 +76,17 @@ public class KtorClientJsonRpcTransport(
     public class Connector(
         private val url: String,
         httpClient: HttpClient,
+        pingIntervalMillis: Long? = DEFAULT_PING_INTERVAL_MILLIS,
         private val request: HttpRequestBuilder.() -> Unit = {},
     ) : JsonRpcTransport.Connector {
 
-        private val httpClient = httpClient.config { install(WebSockets) }
+        private val httpClient = httpClient.config {
+            install(WebSockets) {
+                if (pingIntervalMillis != null) {
+                    this.pingIntervalMillis = pingIntervalMillis
+                }
+            }
+        }
 
         /**
          * Establishes a connection which is closed as soon as [block] execution
@@ -91,18 +97,14 @@ public class KtorClientJsonRpcTransport(
          * without further notice.
          */
         override suspend fun <T> connect(
-            block: suspend JsonRpcTransport.() -> T
+            block: suspend JsonRpcTransport.() -> T,
         ): JsonRpcTransport.Result<T> {
             val isActive = MutableStateFlow(true)
             return try {
                 lateinit var result: JsonRpcTransport.Result<T>
                 httpClient.webSocket(url, request) {
                     val session = this
-                    val transport =
-                        KtorClientJsonRpcTransport(
-                            session = session,
-                            isActive = isActive,
-                        )
+                    val transport = KtorJsonRpcTransport(isActive, session)
                     val value = block(transport)
                     result = JsonRpcTransport.Result.Success(value)
                 }
@@ -110,7 +112,7 @@ public class KtorClientJsonRpcTransport(
             } catch (exception: IOException) {
                 JsonRpcTransport.Result.TransportFailure(
                     message = exception.message,
-                    cause = exception.cause,
+                    cause = exception,
                 )
             } finally {
                 isActive.value = false

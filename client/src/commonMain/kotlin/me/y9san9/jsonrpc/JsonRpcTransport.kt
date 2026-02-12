@@ -25,12 +25,15 @@ public interface JsonRpcTransport {
      * Send message using preferred protocol. Since JsonRpc is basically a
      * string-based protocol, it's transport will work with strings and not
      * bytes.
+     *
+     * This method can throw IOException to indicate that transport was closed.
      */
     public suspend fun send(data: String)
 
     /**
-     * Receive message using preferred protocol. This method should throw
-     * CancellationException if no further messages are expected.
+     * Receive message using preferred protocol.
+     *
+     * This method can throw IOException to indicate that transport was closed.
      */
     public suspend fun receive(): String
 
@@ -69,7 +72,7 @@ public interface JsonRpcTransport {
          * without further notice.
          */
         public suspend fun <T> connect(
-            block: suspend JsonRpcTransport.() -> T
+            block: suspend JsonRpcTransport.() -> T,
         ): Result<T>
     }
 }

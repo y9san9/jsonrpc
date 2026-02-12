@@ -9,7 +9,5 @@ import me.y9san9.jsonrpc.JsonRpcErrorCode
 public value class JsonRpcErrorCodeSerializable(public val int: Int) {
 
     /** Converts this to type-safe version [JsonRpcErrorCode]. */
-    public fun typed(): JsonRpcErrorCode {
-        return JsonRpcErrorCode(int)
-    }
+    public fun typed(): JsonRpcErrorCode = JsonRpcErrorCode(int)
 }

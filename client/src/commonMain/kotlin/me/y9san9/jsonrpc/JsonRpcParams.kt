@@ -15,11 +15,9 @@ public sealed interface JsonRpcParams {
     /**
      * Convert this type to a serializable [JsonRpcParamsSerializable] variant.
      */
-    public fun serializable(): JsonRpcParamsSerializable {
-        return when (this) {
-            is Object -> JsonRpcParamsSerializable(json)
-            is Array -> JsonRpcParamsSerializable(json)
-        }
+    public fun serializable(): JsonRpcParamsSerializable = when (this) {
+        is Object -> JsonRpcParamsSerializable(json)
+        is Array -> JsonRpcParamsSerializable(json)
     }
 
     /**

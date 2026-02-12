@@ -1,6 +1,5 @@
 package me.y9san9.jsonrpc
 
-import kotlin.coroutines.resume
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart.UNDISPATCHED
@@ -8,6 +7,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlin.coroutines.resume
 
 // This optimizes handling of responses by not doing
 // `filter` for every response
@@ -19,7 +19,7 @@ internal class JsonRpcResponseEngine(
         mutableMapOf<
             JsonRpcResponseId,
             CancellableContinuation<JsonRpcResponse>,
-        >()
+            >()
     private val mutex = Mutex()
 
     fun start() {

@@ -12,13 +12,15 @@ import me.y9san9.jsonrpc.JsonRpcSide
 public fun JsonRpc.Companion.websocket(
     url: String,
     httpClient: HttpClient = HttpClient(CIO),
+    pingIntervalMillis: Long? = DEFAULT_PING_INTERVAL_MILLIS,
     json: Json = Json,
     request: HttpRequestBuilder.() -> Unit = {},
 ): JsonRpc.Connector {
     val transport =
-        KtorClientJsonRpcTransport.Connector(
+        KtorJsonRpcTransport.Connector(
             url = url,
             httpClient = httpClient,
+            pingIntervalMillis = pingIntervalMillis,
             request = request,
         )
     val config = JsonRpcConfig(json = json, side = JsonRpcSide.Client)

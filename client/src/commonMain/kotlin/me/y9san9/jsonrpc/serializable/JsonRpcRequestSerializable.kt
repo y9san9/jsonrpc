@@ -14,20 +14,18 @@ public data class JsonRpcRequestSerializable(
     val params: JsonRpcParamsSerializable? = null,
 ) {
     /** Converts this to type-safe [JsonRpcRequest]. */
-    public fun typed(): JsonRpcRequest {
-        return if (id == null) {
-            JsonRpcNotification(
-                jsonrpc = jsonrpc.typed(),
-                method = method.typed(),
-                params = params?.typed(),
-            )
-        } else {
-            JsonRpcMethod(
-                jsonrpc = jsonrpc.typed(),
-                id = id.typed(),
-                method = method.typed(),
-                params = params?.typed(),
-            )
-        }
+    public fun typed(): JsonRpcRequest = if (id == null) {
+        JsonRpcNotification(
+            jsonrpc = jsonrpc.typed(),
+            method = method.typed(),
+            params = params?.typed(),
+        )
+    } else {
+        JsonRpcMethod(
+            jsonrpc = jsonrpc.typed(),
+            id = id.typed(),
+            method = method.typed(),
+            params = params?.typed(),
+        )
     }
 }

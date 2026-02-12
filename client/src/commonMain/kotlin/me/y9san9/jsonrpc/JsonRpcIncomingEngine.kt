@@ -1,13 +1,11 @@
 package me.y9san9.jsonrpc
 
-import kotlin.coroutines.coroutineContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.JsonArray
@@ -30,7 +28,7 @@ internal class JsonRpcIncomingEngine(
 
     fun start() {
         launchNow {
-            while (coroutineContext.isActive) {
+            while (true) {
                 val string = transport.receive()
                 handleIncoming(string)
             }
@@ -46,7 +44,7 @@ internal class JsonRpcIncomingEngine(
                 is JsonObject -> listOf(element)
                 else ->
                     throw JsonRpcTransportException(
-                        "Unknown structure received: $element"
+                        "Unknown structure received: $element",
                     )
             }
 
@@ -64,7 +62,7 @@ internal class JsonRpcIncomingEngine(
 
             Requests cause: $requestsCause
             """
-                .trimIndent()
+                .trimIndent(),
         )
     }
 
@@ -101,10 +99,8 @@ internal class JsonRpcIncomingEngine(
     }
 
     private inline fun launchNow(
-        crossinline block: suspend CoroutineScope.() -> Unit
-    ): Job {
-        return backgroundScope.launch(start = CoroutineStart.UNDISPATCHED) {
-            block()
-        }
+        crossinline block: suspend CoroutineScope.() -> Unit,
+    ): Job = backgroundScope.launch(start = CoroutineStart.UNDISPATCHED) {
+        block()
     }
 }

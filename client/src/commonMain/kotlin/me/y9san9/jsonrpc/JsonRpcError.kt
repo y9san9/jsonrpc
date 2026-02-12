@@ -15,11 +15,10 @@ public data class JsonRpcError(
     /**
      * Convert this type to a serializable [JsonRpcErrorSerializable] variant.
      */
-    public fun serializable(): JsonRpcErrorSerializable {
-        return JsonRpcErrorSerializable(
+    public fun serializable(): JsonRpcErrorSerializable =
+        JsonRpcErrorSerializable(
             code = code.serializable(),
             message = message.serializable(),
             data = data,
         )
-    }
 }

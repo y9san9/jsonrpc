@@ -11,7 +11,5 @@ import me.y9san9.jsonrpc.JsonRpcErrorMessage
 public value class JsonRpcErrorMessageSerializable(public val string: String) {
 
     /** Converts this to type-safe version [JsonRpcErrorMessage]. */
-    public fun typed(): JsonRpcErrorMessage {
-        return JsonRpcErrorMessage(string)
-    }
+    public fun typed(): JsonRpcErrorMessage = JsonRpcErrorMessage(string)
 }

@@ -1,11 +1,12 @@
 [versions]
 
-jsonrpc = "1.0.2"
+jsonrpc = "1.0.3"
 kotlin = "2.2.0"
 ktor = "3.2.2"
 kotlinx-coroutines = "1.10.1"
 kotlinx-serialization = "1.9.0"
 maven-publish = "0.29.0"
+ktlint = "13.0.0"
 
 [libraries]
 
@@ -24,3 +25,4 @@ ktor-client-websockets = { module = "io.ktor:ktor-client-websockets", version.re
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 maven-publish = { id = "com.vanniktech.maven.publish", version.ref = "maven-publish" }
+ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
