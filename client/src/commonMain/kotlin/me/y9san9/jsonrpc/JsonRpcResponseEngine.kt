@@ -1,13 +1,16 @@
 package me.y9san9.jsonrpc
 
-import kotlinx.coroutines.CancellableContinuation
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart.UNDISPATCHED
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlin.coroutines.resume
+
+internal data class JsonRpcPendingResponse(
+    val id: JsonRpcResponseId,
+    val deferred: CompletableDeferred<JsonRpcResponse>,
+)
 
 // This optimizes handling of responses by not doing
 // `filter` for every response
@@ -18,33 +21,63 @@ internal class JsonRpcResponseEngine(
     private val pending =
         mutableMapOf<
             JsonRpcResponseId,
-            CancellableContinuation<JsonRpcResponse>,
+            CompletableDeferred<JsonRpcResponse>,
             >()
     private val mutex = Mutex()
 
     fun start() {
         backgroundScope.launch(start = UNDISPATCHED) {
             incomingEngine.responses.collect { response ->
-                val continuation =
+                val deferred =
                     mutex.withLock { pending.remove(response.id) }
-                if (continuation != null) {
-                    continuation.resume(response)
+                if (deferred != null) {
+                    deferred.complete(response)
                 }
             }
         }
     }
 
-    suspend fun await(id: JsonRpcRequestId): JsonRpcResponse {
-        val responseId = id.toResponseId()
-        return suspendCancellableCoroutine { continuation ->
-            backgroundScope.launch(start = UNDISPATCHED) {
-                mutex.withLock { pending[responseId] = continuation }
+    suspend fun register(
+        ids: List<JsonRpcRequestId>,
+    ): List<JsonRpcPendingResponse> {
+        val responseIds = ids.map { id -> id.toResponseId() }
+        require(responseIds.distinct().size == responseIds.size) {
+            "Request IDs must be unique"
+        }
+        val registrations = responseIds.map { id ->
+            JsonRpcPendingResponse(
+                id = id,
+                deferred = CompletableDeferred(),
+            )
+        }
+
+        mutex.withLock {
+            val alreadyPending = registrations.firstOrNull { registration ->
+                registration.id in pending
             }
-            continuation.invokeOnCancellation {
-                backgroundScope.launch(start = UNDISPATCHED) {
-                    mutex.withLock { pending.remove(responseId) }
+            check(alreadyPending == null) {
+                "Request ID ${alreadyPending?.id} is already pending"
+            }
+            for (registration in registrations) {
+                pending[registration.id] = registration.deferred
+            }
+        }
+
+        return registrations
+    }
+
+    suspend fun unregister(registrations: List<JsonRpcPendingResponse>) {
+        val removed = mutex.withLock {
+            registrations.mapNotNull { registration ->
+                if (pending[registration.id] === registration.deferred) {
+                    pending.remove(registration.id)
+                } else {
+                    null
                 }
             }
+        }
+        for (deferred in removed) {
+            deferred.cancel()
         }
     }
 }

@@ -21,6 +21,12 @@ kotlin {
     }
 
     jvm()
+
+    sourceSets {
+        jvmTest.dependencies {
+            implementation(libs.kotlin.test)
+        }
+    }
 }
 
 dependencies {

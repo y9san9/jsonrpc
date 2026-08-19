@@ -2,12 +2,13 @@ package me.y9san9.jsonrpc
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.async
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.job
 import kotlinx.coroutines.plus
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
@@ -110,13 +111,20 @@ private constructor(
         } else {
             config.json.encodeToString(serializable.first())
         }
-        return coroutineScope {
-            val deferred =
-                requests.filterIsInstance<JsonRpcMethod>().map { request ->
-                    async { responseEngine.await(request.id) }
-                }
+        val registrations = responseEngine.register(
+            requests.filterIsInstance<JsonRpcMethod>().map { request ->
+                request.id
+            },
+        )
+        return try {
             transport.send(json)
-            deferred.awaitAll()
+            registrations.map { registration ->
+                registration.deferred
+            }.awaitAll()
+        } finally {
+            withContext(NonCancellable) {
+                responseEngine.unregister(registrations)
+            }
         }
     }
 
